@@ -1,6 +1,6 @@
-// Package classification of Product API
+// Package classification of Movie API
 //
-// Documentation for Product API
+// Documentation for Movie API
 //
 //	Schemes: http
 //	BasePath: /
@@ -15,7 +15,7 @@
 // swagger:meta
 package handlers
 
-import "../models"
+import "github.com/thoaidao89/moviemanagementsystem/models"
 
 //
 // NOTE: Types defined here are purely for documentation purposes
@@ -37,20 +37,20 @@ type errorValidationWrapper struct {
 	Body ValidationError
 }
 
-// A list of products
-// swagger:response productsResponse
-type productsResponseWrapper struct {
-	// All current products
+// A list of Movies
+// swagger:response MoviesResponse
+type MoviesResponseWrapper struct {
+	// All current Movies
 	// in: body
-	Body []models.Product
+	Body []models.Movie
 }
 
-// Data structure representing a single product
-// swagger:response productResponse
-type productResponseWrapper struct {
-	// Newly created product
+// Data structure representing a single Movie
+// swagger:response MovieResponse
+type MovieResponseWrapper struct {
+	// Newly created Movie
 	// in: body
-	Body models.Product
+	Body models.Movie
 }
 
 // No content is returned by this API endpoint
@@ -58,18 +58,18 @@ type productResponseWrapper struct {
 type noContentResponseWrapper struct {
 }
 
-// swagger:parameters updateProduct createProduct
-type productParamsWrapper struct {
-	// Product data structure to Update or Create.
+// swagger:parameters updateMovie createMovie
+type MovieParamsWrapper struct {
+	// Movie data structure to Update or Create.
 	// Note: the id field is ignored by update and create operations
 	// in: body
 	// required: true
-	Body models.Product
+	Body models.Movie
 }
 
-// swagger:parameters listSingleProduct deleteProduct
-type productIDParamsWrapper struct {
-	// The id of the product for which the operation relates
+// swagger:parameters listSingleMovie deleteMovie
+type MovieIDParamsWrapper struct {
+	// The id of the Movie for which the operation relates
 	// in: path
 	// required: true
 	ID int `json:"id"`

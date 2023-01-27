@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"../models"
+	"github.com/thoaidao89/moviemanagementsystem/models"
 )
 
 // MiddlewareValidateMovie validates the movie in the request and call next if ok
@@ -12,7 +12,7 @@ import (
 func (p *Movies) MiddlewareValidateMovie(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 
-		r.Header().Add("Content-Type", "application/json")
+		rw.Header().Add("Content-Type", "application/json")
 		mov := &models.Movie{}
 		err := models.FromJSON(mov, r.Body)
 		if err != nil {
@@ -22,6 +22,7 @@ func (p *Movies) MiddlewareValidateMovie(next http.Handler) http.Handler {
 			return
 
 		}
+		p.l.Println("Movie ", mov)
 		//validate the movie
 		errs := p.v.Validate(mov)
 		if len(errs) != 0 {

@@ -8,7 +8,8 @@ import (
 	"os/signal"
 	"time"
 
-	"handlers"
+	"github.com/thoaidao89/moviemanagementsystem/handlers"
+	"github.com/thoaidao89/moviemanagementsystem/models"
 
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -19,11 +20,13 @@ func main() {
 
 	err := godotenv.Load(".env")
 	l := log.New(os.Stdout, "movie-management", log.LstdFlags)
+	v := models.NewValidation()
 	if err != nil {
 		l.Fatal(err)
 	}
+
 	var bindAddress = os.Getenv("BIND_ADDRESS") + ":" + os.Getenv("PORT")
-	ph := handlers.NewMovies(l)
+	ph := handlers.NewMovies(l, v)
 
 	//create serve mux
 	// create a new serve mux and register the handlers
@@ -35,17 +38,17 @@ func main() {
 
 	putR := sm.Methods(http.MethodPut).Subrouter()
 	putR.HandleFunc("/movies", ph.Update)
-	putR.Use(ph.MiddlewareValidateProduct)
+	putR.Use(ph.MiddlewareValidateMovie)
 
 	postR := sm.Methods(http.MethodPost).Subrouter()
 	postR.HandleFunc("/movies", ph.Create)
-	postR.Use(ph.MiddlewareValidateProduct)
+	postR.Use(ph.MiddlewareValidateMovie)
 
 	deleteR := sm.Methods(http.MethodDelete).Subrouter()
 	deleteR.HandleFunc("/movies/{id:[0-9]+}", ph.Delete)
 
 	//CORS
-	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{os.Getenv("ALLOW_CORS")}))
+	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{os.Getenv("ALLOW_CORS"), os.Getenv("ALLOW_CORS2")}))
 	// create a new server
 	s := http.Server{
 		Addr:         bindAddress,       // configure the bind address
@@ -55,9 +58,11 @@ func main() {
 		WriteTimeout: 10 * time.Second,  // max time to write response to the client
 		IdleTimeout:  120 * time.Second, // max time for connections using TCP Keep-Alive
 	}
+	// connect with database
+	models.ConnectDatabase()
 	// start the server
 	go func() {
-		l.Println("Starting server on port 9090")
+		l.Println("Starting server on port ", os.Getenv("PORT"))
 
 		err := s.ListenAndServe()
 		if err != nil {

@@ -6,10 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"../models"
-	"github.com/go-swagger/go-swagger/examples/oauth2/models"
-	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 	"github.com/gorilla/mux"
+	"github.com/thoaidao89/moviemanagementsystem/models"
 )
 
 // KeyMovie is a key used for the Movie object in the context
@@ -18,7 +16,7 @@ type KeyMovie struct{}
 // Movies handler for getting and updating movies
 type Movies struct {
 	l *log.Logger
-	v *models.ValidationError
+	v *models.Validation
 }
 
 // NewMovies returns a new movies handler with the given logger
@@ -156,8 +154,43 @@ func (p *Movies) ListSingle(rw http.ResponseWriter, r *http.Request) {
 // Create handles POST requests to add new Movies
 func (p *Movies) Create(rw http.ResponseWriter, r *http.Request) {
 	// fetch the Movie from the context
-	prod := r.Context().Value(KeyMovie{}).(models.Movie)
+	var mov *models.Movie
+	mov = r.Context().Value(KeyMovie{}).(*models.Movie)
+	p.l.Println("MOVIE ", mov)
+	p.l.Printf("[DEBUG] Inserting Movie: %#v\n", mov)
+	models.AddMovie(mov)
+}
 
-	p.l.Printf("[DEBUG] Inserting Movie: %#v\n", prod)
-	models.AddMovie(prod)
+// swagger:route DELETE /products/{id} products deleteProduct
+// Update a products details
+//
+// responses:
+//	201: noContentResponse
+//  404: errorResponse
+//  501: errorResponse
+
+// Delete handles DELETE requests and removes items from the database
+
+func (p *Movies) Delete(rw http.ResponseWriter, r *http.Request) {
+	{
+		rw.Header().Add("Content-Type", "application/json")
+		id := getMovieID(r)
+		p.l.Println("[DEBUG] deleting record id ", id)
+		err := models.DeleteMovie(id)
+		if err == models.ErrMovieNotFound {
+			p.l.Println("[ERROR] deleting record id does not exitst")
+			rw.WriteHeader(http.StatusNotFound)
+			models.ToJSON(&GenericError{Message: err.Error()}, rw)
+			return
+		}
+		if err != nil {
+			p.l.Println("[ERROR] deleting record", err)
+			rw.WriteHeader(http.StatusInternalServerError)
+			models.ToJSON(&GenericError{Message: err.Error()}, rw)
+			return
+		}
+
+		rw.WriteHeader(http.StatusNoContent)
+
+	}
 }
